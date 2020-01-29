@@ -5,9 +5,16 @@ from tkinter import *
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
-# Setting up
+# Setting up PWM
 GPIO.setup(12, GPIO.OUT)
 p = GPIO.PWM(12, 1/50)
 
+# Setting up ECHO
+
+
+# Setting up Trigger
+
+
+# DHT11 Sensor
 
 
