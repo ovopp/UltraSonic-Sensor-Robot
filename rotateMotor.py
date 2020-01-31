@@ -16,9 +16,9 @@ p.start(2.5)
 
 
 def distance(i):
-  p.ChangeDutyCycle(2.5 + 0.5 * i)
+  p.ChangeDutyCycle(2.5 + 1/6 * i)
   GPIO.output(TRIGGER, False)
-  time.sleep(0.5)
+  time.sleep(0.06)
   GPIO.output(TRIGGER, True)
   time.sleep(0.00001)
   GPIO.output(TRIGGER, False)
@@ -28,14 +28,34 @@ def distance(i):
     stop = time.time()
   elapsed = stop-start
   distance = (elapsed * 34000.0) / 2
-  print("Angle: ", i)
+  print("Angle: ", i * 3)
+  print("Distance : %.1f cm" % distance)
 
+def distanceBack(i):
+  p.ChangeDutyCycle(12.5 - 1/6 * i)
+  GPIO.output(TRIGGER, False)
+  time.sleep(0.06)
+  GPIO.output(TRIGGER, True)
+  time.sleep(0.00001)
+  GPIO.output(TRIGGER, False)
+  while GPIO.input(ECHO)==0:
+    start = time.time()
+  while GPIO.input(ECHO)==1:
+    stop = time.time()
+  elapsed = stop-start
+  distance = (elapsed * 34000.0) / 2
+  print("Angle: ", i * 3)
   print("Distance : %.1f cm" % distance)
 
 try:
-  for i in range(20):
-    p.ChangeDutyCycle(2.5)
-    distance(i)
+  while True:
+    for i in range(20):
+      p.ChangeDutyCycle(2.5)
+      distance(i)
+    for i in range(20):
+      p.ChangeDutyCycle(12.5)
+      distanceBack(i)
+
 except KeyboardInterrupt:
   p.stop()
   GPIO.cleanup()
