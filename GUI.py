@@ -14,13 +14,16 @@ from auth import (
     consumer_key, consumer_secret, access_token, access_token_secret
 )
 
+#Seting up GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)  # do not show any warnings
 
+#Assigning the GPIO pin numbers
 SERVO = 18
 TRIGGER = 23
 ECHO = 24
 
+#Initializing the GPIO components
 GPIO.setup(SERVO, GPIO.OUT)
 GPIO.setup(TRIGGER, GPIO.OUT)
 GPIO.setup(ECHO, GPIO.IN)
@@ -33,6 +36,7 @@ TweetDistance = 70  # Distance to which it will tweet.
 p = GPIO.PWM(SERVO, 50)  # GPIO 18 for PWM with 50Hz
 p.start(2.5)
 
+#Setting up Twython for tweeting
 twitter = Twython(
     consumer_key,
     consumer_secret,
@@ -53,7 +57,7 @@ def tweet(message):
     twitter.update_status(status=message)
     print("tweeted!")
 
-
+#Starts servo motor (sweeps back and forth)
 def startServo():
     global on
     while True:
@@ -99,9 +103,11 @@ def ledController(x):
 
 # Function to rotate and measure from 0 -> 180
 def distanceStart():
+    #Initializing global variables TwetDistance (distance used to determine wether to tweet or not), temp (temperature) and speed (speed of the motor)
     global TweetDistance, temp, speed
     print("In distance start")
     for j in range(60):
+        #Rotates the servo 3 degrees
         p.ChangeDutyCycle(2.5 + 1 / 6 * j)
         GPIO.output(TRIGGER, False)
         time.sleep(1-0.094*speed)
@@ -114,6 +120,7 @@ def distanceStart():
             stop = time.time()
         elapsed = stop - start
         length = (elapsed * (33150.0 + 0.6 * temp)) / 2
+        #Depending on the distance, the LEDs will turn on
         if length < 15:
             ledController(2)
         elif length < 30:
@@ -122,8 +129,10 @@ def distanceStart():
             ledController(4)
         else:
             ledController(5)
+        #Displays the angle and distance to the terminal
         print("Angle: ", j * 3)
         print("Distance : %.1f cm" % length)
+        #
         TweetDistance = length
         drawDist(j * 3, length)
 
@@ -161,6 +170,7 @@ def distanceBack():
 
 # Draws a distance line on the canvas
 def drawDist(angle, length):
+    angle = angle*pi/180
     if length > 70:
         length = 70 #max size length can be without making it like huge
     radar.create_line(145 + length * math.sin(angle - math.pi / 2), 145 - length * math.cos(angle - math.pi / 2),
