@@ -28,7 +28,8 @@ def distance(i):
     stop = time.time()
   elapsed = stop-start
   distance = (elapsed * 34000.0) / 2
-  return distance
+  print("Angle: ", i)
+  print("Distance : %.1f cm" % distance)
 
 try:
   for i in range(20):
