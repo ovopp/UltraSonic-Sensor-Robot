@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import sys
 
-def bin2dec(string_num):
+def binaryToDecimal(string_num):
     return str(int(string_num, 2))
    
 data = []
@@ -39,23 +39,19 @@ def pullData():
     time.sleep(0.14)
     
     GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    
+    a = time.perf_counter_ns(5000)   # this reads at 5 us, should be able to read
     for i in range(0,1000):
-        data.append(GPIO.input(pin))
-
-    """   
-    for i in range(0,len(data)):
-        print "%d" % data[i],
-    print
-    """
+        a = time.perf_counter_ns() + 5000   # this reads at 5 us, should be able to read
+        while time.perf_counter < a:
+            pass
+        data.append(GPIO.input(pin))    #append the reading to the data list
    
-#}}}
 
 
 def analyzeData():
-#{{{ Analyze data
+# Analyze data
 
-#{{{ Add HI (2x8)x3 bits to array
+# Add HI (2x8)x3 bits to array
     
     seek=0
     bits_min=9999
@@ -108,11 +104,10 @@ def analyzeData():
         effectiveData.append(buffer)
         #print "%s " % buffer
             
-#}}}
 
 
 
-#{{{ Make effectiveData smaller
+# Make effectiveData smaller
     
     """
     Replace blocks of HIs with either '1' or '0' depending on block length
@@ -142,8 +137,8 @@ def analyzeData():
     for i in range(32, 40):
         crc += str(effectiveData[i])
     
-    Humidity = bin2dec(HumidityBit)
-    Temperature = bin2dec(TemperatureBit)
+    Humidity = binaryToDecimal(HumidityBit)
+    Temperature = binaryToDecimal(TemperatureBit)
 
     #print "HumidityBit=%s, TemperatureBit=%s, crc=%s" % (HumidityBit, TemperatureBit, crc)
 
@@ -152,7 +147,7 @@ def analyzeData():
 #}}}
 
 
-#{{{ Check CRC
+
 def isDataValid():
     
     global Humidity
@@ -164,21 +159,20 @@ def isDataValid():
         return True
     else:
         return False
-#}}}
 
 
-#{{{ Print data
+
+# Print data
 def printData():
    global Humidity
    global Temperature
    
    print("H: "+Humidity)
    print("T: "+Temperature)
-#}}}
 
 
 
-#{{{ Main loop
+# Testing Loop
 
 while (not crc_OK):
     pullData()
@@ -190,4 +184,3 @@ while (not crc_OK):
     else:
         sys.stderr.write(".")
         time.sleep(2)
-#}}}
