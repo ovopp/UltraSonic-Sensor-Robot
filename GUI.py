@@ -109,11 +109,13 @@ def distanceStart():
     for j in range(60):
         #Rotates the servo 3 degrees
         p.ChangeDutyCycle(2.5 + 1 / 6 * j)
+        #Sends a pulse of sound
         GPIO.output(TRIGGER, False)
         time.sleep(1-0.094*speed)
         GPIO.output(TRIGGER, True)
         time.sleep(0.00001)
         GPIO.output(TRIGGER, False)
+        #Measures the start and stop of the echo wave
         while GPIO.input(ECHO) == 0:
             start = time.time()
         while GPIO.input(ECHO) == 1:
@@ -143,13 +145,17 @@ def distanceStart():
 def distanceBack():
     global TweetDistance, temp, speed
     print("in distance back")
+    #Measures every 3 degrees of servo rotation
     for k in range(60):
+        #Rotate servo
         p.ChangeDutyCycle(12.5 - 1 / 6 * k)
+        #Sends pulse
         GPIO.output(TRIGGER, False)
         time.sleep(1-0.094*speed)
         GPIO.output(TRIGGER, True)
         time.sleep(0.00001)
         GPIO.output(TRIGGER, False)
+        #Measures start and stop of the echo
         while GPIO.input(ECHO) == 0:
             start = time.time()
         while GPIO.input(ECHO) == 1:
