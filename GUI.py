@@ -44,7 +44,10 @@ twitter = Twython(
 dht = Adafruit_DHT.DHT11
 temp = 23  # default temp
 
+# Thread variables
 on = False
+speed = 5
+
 
 def tweet(message):
     twitter.update_status(status=message)
@@ -55,17 +58,13 @@ def startServo():
     global on
     while True:
         if on:
-            p.ChangeDutyCycle(2.5)
             distanceStart()
             distanceBack()
-
-
-def startTemp():
-    global temp
-    while True:
-        humidity, temperature = Adafruit_DHT.read_retry(dht, 12)
-        if temperature != temp:
-            temp = temperature
+            humidity, temperature = Adafruit_DHT.read_retry(dht, 4)
+            print(temperature)
+            if temperature != None:
+                temp = temperature
+                
 
 
 # Function for starting the servo button thread
@@ -100,12 +99,12 @@ def ledController(x):
 
 # Function to rotate and measure from 0 -> 180
 def distanceStart():
-    global TweetDistance, temp
+    global TweetDistance, temp, speed
     print("In distance start")
     for j in range(60):
         p.ChangeDutyCycle(2.5 + 1 / 6 * j)
         GPIO.output(TRIGGER, False)
-        time.sleep(0.06)
+        time.sleep(1-0.094*speed)
         GPIO.output(TRIGGER, True)
         time.sleep(0.00001)
         GPIO.output(TRIGGER, False)
@@ -131,12 +130,12 @@ def distanceStart():
 
 # Function to rotate and measure from 180 -> 0
 def distanceBack():
-    global TweetDistance, temp
+    global TweetDistance, temp, speed
     print("in distance back")
     for k in range(60):
         p.ChangeDutyCycle(12.5 - 1 / 6 * k)
         GPIO.output(TRIGGER, False)
-        time.sleep(0.06)
+        time.sleep(1-0.094*speed)
         GPIO.output(TRIGGER, True)
         time.sleep(0.00001)
         GPIO.output(TRIGGER, False)
@@ -162,6 +161,8 @@ def distanceBack():
 
 # Draws a distance line on the canvas
 def drawDist(angle, length):
+    if length > 70:
+        length = 70 #max size length can be without making it like huge
     radar.create_line(145 + length * math.sin(angle - math.pi / 2), 145 - length * math.cos(angle - math.pi / 2),
                       145, 145, fill="green")
 
@@ -173,16 +174,27 @@ def tweetEvent():
         tweet("Current Distance: " + str(TweetDistance))
     return
 
+def submitspeed():
+    global speed
+    k = speedEntry.get()
+    try:
+        if float(k) is not float:
+            k = float(k)
+            if k < 11 and k > 0:
+                speed = k
+                print("Value OK, speed changed to: " + str(speed))
+            else:
+                print("Value not within 1-10")
+    except ValueError:
+        print("Entry not a valid number")
+            
+        
 
 # Thread to control servo functionality
 thread = threading.Thread(target=startServo, args=())
 thread.daemon = True
 thread.start()
 
-# Thread to take care of temperature readings
-thread1 = threading.Thread(target=startTemp)
-thread1.daemon = True
-thread1.start()
 
 try:
     '''
@@ -302,10 +314,17 @@ try:
     # Button that starts the servo and reads
     servoButton = Button(window, text="SERVO on/off", command=startServoThread, width="20")
     servoButton.grid(column=2, row=3, sticky="N")
-
+    
+    # Entry that takes in servo speed
+    speedEntry = Entry(window)
+    speedEntry.grid(column=2, row=4)
+    Button(window, text="Submit speed (1-10)", command = submitspeed, width='20').grid(column=3,row=4, sticky='N')
+    
+           
     # The main window loop
     window.mainloop()
 
 except KeyboardInterrupt:
     p.stop()
     GPIO.cleanup()
+
