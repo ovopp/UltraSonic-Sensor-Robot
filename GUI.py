@@ -3,7 +3,7 @@ from tkinter import ttk
 import time
 import math
 import matplotlib
-
+#import Twitter_API
 window = Tk();
 
 '''
@@ -116,8 +116,14 @@ def mainWindow ():
     distanceLabel4.pack()
     radar.create_window(225, 155, window=distanceLabel4)
     
-    radar.pack()
+    radar.grid(row=1, rowspan=2, column=1)
+
+    '''Twitter API interactions'''
+    tweetLabel = Label(window, text="This button will tweet if the distance sensor is reportin a distance less than 10cm")
+    tweetLabel.grid(column=2, row=1, sticky="S")
     
+    tweetButton = Button(window, text="TWEET")
+    tweetButton.grid(column=2, row=2, sticky="N")
     window.mainloop()
     return
 
