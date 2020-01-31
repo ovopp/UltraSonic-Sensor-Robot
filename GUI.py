@@ -118,6 +118,7 @@ def distanceStart():
             start = time.time()
         while GPIO.input(ECHO) == 1:
             stop = time.time()
+        #Calculates the distance based of echo length ad temperature
         elapsed = stop - start
         length = (elapsed * (33150.0 + 0.6 * temp)) / 2
         #Depending on the distance, the LEDs will turn on
@@ -132,8 +133,9 @@ def distanceStart():
         #Displays the angle and distance to the terminal
         print("Angle: ", j * 3)
         print("Distance : %.1f cm" % length)
-        #
+        #Changes the length used to tweet
         TweetDistance = length
+        #Draws a line on radar for the corresponding length and angle
         drawDist(j * 3, length)
 
 
@@ -152,8 +154,10 @@ def distanceBack():
             start = time.time()
         while GPIO.input(ECHO) == 1:
             stop = time.time()
+        #Calculates the distance based of echo length ad temperature
         elapsed = stop - start
         length = (elapsed * (33150.0 + 0.6 * temp / 2)) / 2
+        #Lights up the LEDs according to distance
         if length < 15:
             ledController(2)
         elif length < 30:
@@ -162,9 +166,12 @@ def distanceBack():
             ledController(4)
         else:
             ledController(5)
+        #Prints the angle and distance to the terminal
         print("Angle: ", 180 - k * 3)
         print("Distance : %.1f cm" % length)
+        #Changes the length tweet uses
         TweetDistance = length
+        #Draws a line on the radar at the current angle and distance
         drawDist(180 - k * 3, length)
 
 
@@ -173,6 +180,7 @@ def drawDist(angle, length):
     angle = angle*pi/180
     if length > 70:
         length = 70 #max size length can be without making it like huge
+    #Draws a line at the specified angle and distance on the radar
     radar.create_line(145 + length * math.sin(angle - math.pi / 2), 145 - length * math.cos(angle - math.pi / 2),
                       145, 145, fill="green")
 
@@ -184,9 +192,11 @@ def tweetEvent():
         tweet("Current Distance: " + str(TweetDistance))
     return
 
+#Changes the speed of the servo motor
 def submitspeed():
     global speed
     k = speedEntry.get()
+    #Checks if the value is a valid speed 11+ and an integer
     try:
         if float(k) is not float:
             k = float(k)
@@ -255,7 +265,7 @@ try:
     innerArc6 = 50 + shift6, 50 + shift6, 240 - shift6, 240 - shift6
     arcInner6 = radar.create_arc(innerArc6, start=0, extent=180, outline="white", fill="")
 
-    '''Reference lines'''
+    '''Reference lines: Lines used to measure the angle of the measurements'''
     distance = 70 * 1.35  # The distance of the lines used for reference (maximum)
 
     angle1 = math.pi / 4
@@ -270,7 +280,7 @@ try:
     AngleRef3 = radar.create_line(145 + distance * math.sin(angle3 - math.pi / 2),
                                   145 - distance * math.cos(angle3 - math.pi / 2), 145, 145, fill="white")
 
-    '''Reference labels'''
+    '''Reference labels: The values of each of the reference curves and arcs'''
     # Angle labels
     angleLabel1 = Label(radar, text="0*")
     angleLabel1.pack()
