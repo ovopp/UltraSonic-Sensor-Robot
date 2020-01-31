@@ -1,12 +1,17 @@
-from tkinter import *
-from tkinter import ttk
 import time
 import math
 import matplotlib
-import Twitter_API
-import rotateMotor
 import RPi.GPIO as GPIO
 import time
+import threading
+
+from tkinter import *
+from tkinter import ttk
+from twython import Twython
+from twython import TwythonStreamer
+from auth import (
+    consumer_key, consumer_secret, access_token, access_token_secret
+)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)           # do not show any warnings
@@ -22,9 +27,33 @@ GPIO.setup(16,GPIO.OUT)            # initialize GPIO Pins as an output.
 GPIO.setup(20,GPIO.OUT)
 GPIO.setup(21,GPIO.OUT)
 
+TweetDistance = 70
+
 p = GPIO.PWM(SERVO, 50) # GPIO 18 for PWM with 50Hz
 p.start(2.5)
 
+twitter = Twython(
+    consumer_key,
+    consumer_secret,
+    access_token,
+    access_token_secret
+)
+
+def tweet (message):
+    twitter.update_status(status=message)
+    print("tweeted!")
+
+def startServo():
+    while(True):
+        distanceStart()
+        distanceBack()
+        
+def startServoThread():
+    thread = threading.Thread(target=startServo, args=())
+    thread.daemon = True
+    thread.start()
+    
+    
 def ledController(x):
     GPIO.output(16,0) #DATA PIN set to 0
     time.sleep(0.001)
@@ -46,71 +75,78 @@ def ledController(x):
     time.sleep(0.001)
     GPIO.output(21,0)            # pull down the SHIFT pin
 
-def distance(i):
-  p.ChangeDutyCycle(2.5 + 1/6 * i)
-  GPIO.output(TRIGGER, False)
-  time.sleep(0.06)
-  GPIO.output(TRIGGER, True)
-  time.sleep(0.00001)
-  GPIO.output(TRIGGER, False)
-  while GPIO.input(ECHO)==0:
-    start = time.time()
-  while GPIO.input(ECHO)==1:
-    stop = time.time()
-  elapsed = stop-start
-  distance = (elapsed * 34000.0) / 2
-  if (distance < 15):
-    ledController(2)
-  elif (distance <30):
-    ledController(3)
-  elif (distance < 45):
-    ledController(4)
-  else:
-    ledController(5)
-  print("Angle: ", i * 3)
-  print("Distance : %.1f cm" % distance)
-  TweetDistance = distance;
-  drawDist(angle, distance)
+def distanceStart():
+    global TweetDistance
+    print("In distance start")
+    for j in range(60):
+        p.ChangeDutyCycle(2.5 + 1/6*j)
+        GPIO.output(TRIGGER, False)
+        time.sleep(0.06)
+        GPIO.output(TRIGGER, True)
+        time.sleep(0.00001)
+        GPIO.output(TRIGGER, False)
+        while GPIO.input(ECHO)==0:
+            start = time.time()
+        while GPIO.input(ECHO)==1:
+            stop = time.time()
+        elapsed = stop-start
+        distance = (elapsed * 34000.0) / 2
+        if (distance < 15):
+            ledController(2)
+        elif (distance <30):
+            ledController(3)
+        elif (distance < 45):
+            ledController(4)
+        else:
+            ledController(5)
+        print("Angle: ", j * 3)
+        print("Distance : %.1f cm" % distance)
+        TweetDistance = distance
+        drawDist(j*3, distance)
 
-def distanceBack(i):
-  p.ChangeDutyCycle(12.5 - 1/6 * i)
-  GPIO.output(TRIGGER, False)
-  time.sleep(0.06)
-  GPIO.output(TRIGGER, True)
-  time.sleep(0.00001)
-  GPIO.output(TRIGGER, False)
-  while GPIO.input(ECHO)==0:
-    start = time.time()
-  while GPIO.input(ECHO)==1:
-    stop = time.time()
-  elapsed = stop-start
-  distance = (elapsed * 34000.0) / 2
-  if (distance < 15):
-    ledController(2)
-  elif (distance <30):
-    ledController(3)
-  elif (distance < 45):
-    ledController(4)
-  else:
-    ledController(5)
-  print("Angle: ", i * 3)
-  print("Distance : %.1f cm" % distance)
-  TweetDistance = distance;
-  drawDist(angle, distance)
+def distanceBack():
+    global TweetDistance
+    print("in distance back")
+    for k in range(60):
+        p.ChangeDutyCycle(12.5 - 1/6 * k)
+        GPIO.output(TRIGGER, False)
+        time.sleep(0.06)
+        GPIO.output(TRIGGER, True)
+        time.sleep(0.00001)
+        GPIO.output(TRIGGER, False)
+        while GPIO.input(ECHO)==0:
+            start = time.time()
+        while GPIO.input(ECHO)==1:
+            stop = time.time()
+        elapsed = stop-start
+        distance = (elapsed * 34000.0) / 2
+        if (distance < 15):
+            ledController(2)
+        elif (distance <30):
+            ledController(3)
+        elif (distance < 45):
+            ledController(4)
+        else:
+            ledController(5)
+        print("Angle: ", 180-k*3)
+        print("Distance : %.1f cm" % distance)
+        TweetDistance = distance
+        drawDist(180-k*3, distance)
   
 #Draws a distance line on the canvas
 def drawDist(angle, distance):
-    distance*=1.35
     radar.create_line(145 + distance*math.sin(angle - math.pi/2), 145 - distance*math.cos(angle - math.pi/2), 145, 145, fill="green")
 
 #If the distance is less than 10cm then it tweets the current distance
 def tweetEvent ():
-    if (distance < 10):
-        Twitter_API.tweet("Current Distance: " + str(TweetDistance))
+    print("tweet event")
+    if (TweetDistance < 10):
+        tweet("Current Distance: " + str(TweetDistance))
     return
 
+
+
 try:
-    global TweetDistance = 70
     '''
     The main window of the GUI
     Creates the main window of the GUI has 4 columns and 8 rows
@@ -212,7 +248,7 @@ try:
     distanceLabel4 = Label(radar, text="60")
     distanceLabel4.pack()
     radar.create_window(225, 155, window=distanceLabel4)
-    
+        
     radar.grid(row=1, rowspan=2, column=1)
     
     '''Twitter API interactions'''
@@ -223,16 +259,14 @@ try:
     #Button that sends tweet if the conditions are met
     tweetButton = Button(window, text="TWEET", command=tweetEvent, width="20")
     tweetButton.grid(column=2, row=2, sticky="N")
-
-    for i in range(60):
-      p.ChangeDutyCycle(2.5)
-      distance(i)
-    for i in range(60):
-      p.ChangeDutyCycle(12.5)
-      distanceBack(i)
+    
+    #Button that starts the servo and reads
+    servoButton = Button(window, text="START SERVO", command=startServoThread, width="20")
+    servoButton.grid(column=2, row=3, sticky="N")
     
     #The main window loop
     window.mainloop()
 except KeyboardInterrupt:
   p.stop()
   GPIO.cleanup()
+
