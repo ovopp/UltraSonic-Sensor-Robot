@@ -4,6 +4,7 @@ import matplotlib
 import RPi.GPIO as GPIO
 import time
 import threading
+import Adafruit_DHT
 
 from tkinter import *
 from tkinter import ttk
@@ -27,7 +28,7 @@ GPIO.setup(16,GPIO.OUT)            # initialize GPIO Pins as an output.
 GPIO.setup(20,GPIO.OUT)
 GPIO.setup(21,GPIO.OUT)
 
-TweetDistance = 70
+TweetDistance = 70                 # Distance to which it will tweet.
 
 p = GPIO.PWM(SERVO, 50) # GPIO 18 for PWM with 50Hz
 p.start(2.5)
@@ -39,6 +40,10 @@ twitter = Twython(
     access_token_secret
 )
 
+# Setup DHT11 Temperature Reading
+dht = Adafruit_DHT.DHT11
+
+
 def tweet (message):
     twitter.update_status(status=message)
     print("tweeted!")
@@ -48,6 +53,15 @@ def startServo():
         distanceStart()
         distanceBack()
         
+def startTemp():
+    global temp
+    while(True):
+        humidity, temperature = Adafruit_DHT.read_retry(dht, 12)
+        if(temperature != NULL):
+            temp = temperature
+            
+            
+            
 def startServoThread():
     thread = threading.Thread(target=startServo, args=())
     thread.daemon = True
@@ -90,7 +104,7 @@ def distanceStart():
         while GPIO.input(ECHO)==1:
             stop = time.time()
         elapsed = stop-start
-        distance = (elapsed * 34000.0) / 2
+        distance = (elapsed * (33150.0 + 0.6*temp)) / 2
         if (distance < 15):
             ledController(2)
         elif (distance <30):
@@ -119,7 +133,7 @@ def distanceBack():
         while GPIO.input(ECHO)==1:
             stop = time.time()
         elapsed = stop-start
-        distance = (elapsed * 34000.0) / 2
+        distance = (elapsed * (33150.0 + 0.6*Adafruit_DHT.read_retry(dht, 12))) / 2
         if (distance < 15):
             ledController(2)
         elif (distance <30):
@@ -144,6 +158,10 @@ def tweetEvent ():
         tweet("Current Distance: " + str(TweetDistance))
     return
 
+# Thread to take care of temperature readings
+thread1 = threading.Thread(target=startTemp)
+thread1.daemon = True
+thread1.start()
 
 
 try:
