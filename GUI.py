@@ -180,15 +180,26 @@ def distanceBack():
         #Draws a line on the radar at the current angle and distance
         drawDist(180 - k * 3, length)
 
-
+linelist = []
 # Draws a distance line on the canvas
 def drawDist(angle, length):
-    angle = angle*pi/180
+    index = int(angle/ 3)
+    angle = angle*math.pi/180
+            
     if length > 70:
         length = 70 #max size length can be without making it like huge
-    #Draws a line at the specified angle and distance on the radar
-    radar.create_line(145 + length * math.sin(angle - math.pi / 2), 145 - length * math.cos(angle - math.pi / 2),
+        
+    if len(linelist) == 61:
+        radar.delete(linelist[index])
+        line = radar.create_line(145 + length * math.sin(angle - math.pi / 2), 145 - length * math.cos(angle - math.pi / 2),
                       145, 145, fill="green")
+        linelist[index] = line
+    
+    else:
+        #Draws a line at the specified angle and distance on the radar
+        line = radar.create_line(145 + length * math.sin(angle - math.pi / 2), 145 - length * math.cos(angle - math.pi / 2),
+                      145, 145, fill="green")
+        linelist.append(line)
 
 
 # If the distance is less than 10cm then it tweets the current distance
@@ -353,4 +364,5 @@ try:
 except KeyboardInterrupt:
     p.stop()
     GPIO.cleanup()
+
 
