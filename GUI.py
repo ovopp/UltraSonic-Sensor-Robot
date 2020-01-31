@@ -36,6 +36,7 @@ def mainWindow ():
         drawDist(i*math.pi/60+math.pi/180, 20);
         drawDist(i*math.pi/60+2*math.pi/180, 20);
 
+    '''Reference curves'''
     shift1 = 550/7
     innerArc1 = 50+shift1, 50+shift1, 240-shift1, 240-shift1
     arcInner1 = radar.create_arc(innerArc1, start=0, extent=180, outline="white", fill="")
@@ -60,6 +61,60 @@ def mainWindow ():
     shift6 = 100/7
     innerArc6 = 50+shift6, 50+shift6, 240-shift6, 240-shift6
     arcInner6 = radar.create_arc(innerArc6, start=0, extent=180, outline="white", fill="")
+
+    
+    '''Reference lines'''
+    distance = 70*1.35
+    
+    angle1 = math.pi/4
+    AngleRef1 = radar.create_line(145 + distance*math.sin(angle1 - math.pi/2), 145 - distance*math.cos(angle1 - math.pi/2), 145, 145, fill="white")
+
+    angle2 = math.pi/2
+    AngleRef2 = radar.create_line(145 + distance*math.sin(angle2 - math.pi/2), 145 - distance*math.cos(angle2 - math.pi/2), 145, 145, fill="white")
+
+    angle3 = 3*math.pi/4
+    AngleRef3 = radar.create_line(145 + distance*math.sin(angle3 - math.pi/2), 145 - distance*math.cos(angle3 - math.pi/2), 145, 145, fill="white")
+
+
+    '''Reference labels'''
+    #Angle labels
+    angleLabel1 = Label(radar, text="0*")
+    angleLabel1.pack()
+    radar.create_window(30, 140, window=angleLabel1)
+
+    angleLabel2 = Label(radar, text="45*")
+    angleLabel2.pack()
+    radar.create_window(70, 60, window=angleLabel2)
+
+    angleLabel3 = Label(radar, text="90*")
+    angleLabel3.pack()
+    radar.create_window(150, 40, window=angleLabel3)
+
+    angleLabel4 = Label(radar, text="135*")
+    angleLabel4.pack()
+    radar.create_window(220, 60, window=angleLabel4)
+
+    angleLabel5 = Label(radar, text="180*")
+    angleLabel5.pack()
+    radar.create_window(270, 140, window=angleLabel5)
+
+    
+    #Distance labels
+    distanceLabel1 = Label(radar, text="0")
+    distanceLabel1.pack()
+    radar.create_window(145, 155, window=distanceLabel1)
+
+    distanceLabel2 = Label(radar, text="20")
+    distanceLabel2.pack()
+    radar.create_window(175, 155, window=distanceLabel2)
+
+    distanceLabel3 = Label(radar, text="40")
+    distanceLabel3.pack()
+    radar.create_window(200, 155, window=distanceLabel3)
+
+    distanceLabel4 = Label(radar, text="60")
+    distanceLabel4.pack()
+    radar.create_window(225, 155, window=distanceLabel4)
     
     radar.pack()
     
