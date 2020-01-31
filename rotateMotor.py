@@ -18,7 +18,7 @@ p.start(2.5)
 def distance(i):
   p.ChangeDutyCycle(2.5 + 0.5 * i)
   GPIO.output(TRIGGER, False)
-  time.sleep(0.06)
+  time.sleep(0.005)
   GPIO.output(TRIGGER, True)
   time.sleep(0.00001)
   GPIO.output(TRIGGER, False)
