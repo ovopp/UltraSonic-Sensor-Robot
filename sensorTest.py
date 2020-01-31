@@ -19,9 +19,10 @@ try:
     time.sleep(0.00001)
     # turn off the trigger pin
     GPIO.output(TRIGGER, False)
-    # set the time 
+    # record last lowstamp for ECHO
     while GPIO.input(ECHO)==0:
       start = time.time()
+    # record last highstamp for ECHO
     while GPIO.input(ECHO)==1:
       stop = time.time()
     # calculate pulse length
