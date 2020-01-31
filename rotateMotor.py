@@ -41,8 +41,10 @@ def ledController(x):
     time.sleep(0.001)
     GPIO.output(21,0)            # pull down the SHIFT pin
 
-
+# this sweeps from 0 - 180 degrees
 def distance(i):
+  # we will change the angle by 3 degrees,
+  # 180/3 = 60 cycles -> change dutycycle by 10/60 = 1/6
   p.ChangeDutyCycle(2.5 + 1/6 * i)
   GPIO.output(TRIGGER, False)
   time.sleep(0.06)
@@ -55,6 +57,7 @@ def distance(i):
     stop = time.time()
   elapsed = stop-start
   distance = (elapsed * 34000.0) / 2
+  # controls leds according to the distance
   if (distance < 15):
     ledController(2)
   elif (distance <30):
@@ -66,6 +69,7 @@ def distance(i):
   print("Angle: ", i * 3)
   print("Distance : %.1f cm" % distance)
 
+# this reverse sweeps radar from 180 
 def distanceBack(i):
   p.ChangeDutyCycle(12.5 - 1/6 * i)
   GPIO.output(TRIGGER, False)
