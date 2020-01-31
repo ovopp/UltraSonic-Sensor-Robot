@@ -1,17 +1,17 @@
 import time
-import board
-import adafruit_dht
-
-dht = adafruit_dht.DHT11(board.D32)
-
-while True:
-    try:
-        temperature = dht.temperature
-        humidity = dht.humidity
-        # Print what we got to the REPL
-        print("Temp: {:.1f} *C \t Humidity: {}%".format(temperature, humidity))
-    except RuntimeError as e:
-        # Reading doesn't always work! Just print error and we'll try again
-        print("Reading from DHT failure: ", e.args)
-
-    time.sleep(1)
+import Adafruit_DHT
+sensor = Adafruit_DHT.DHT11
+pin = 32
+try:
+    while True :
+        t = Adafruit_DHT.read_retry(sensor, pin)
+        if t is not None:
+            print("Temperature = {0:0.1f}*C".format(t))
+        else :
+            print('Read error')
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("Terminated by Keyboard")
+ 
+finally:
+    print("End of Program")
