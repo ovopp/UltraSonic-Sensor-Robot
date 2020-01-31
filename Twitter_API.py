@@ -32,10 +32,11 @@ twitter = Twython(
     access_token_secret
 )
 # Uses the API's update_status() function to send a tweet containing hello twitter
-message = "Hello Josh, I'm watching you!"
-twitter.update_status(status=message)
-print("Tweeted: %s" % message)
-
+#message = "Hello Josh, I'm watching you!"
+#twitter.update_status(status=message)
+#print("Tweeted: %s" % message)
+def tweet (message):
+    twitter.update_status(status=message)
 # Code to upload image to Twitter
 # image = open('image.jpg', 'rb')  # file opens the image
 # response = twitter.upload_media(media=image)
