@@ -32,7 +32,7 @@ twitter = Twython(
     access_token_secret
 )
 # Uses the API's update_status() function to send a tweet containing hello twitter
-message = "Hello Twitter!"
+message = "Hello Josh, I'm watching you!"
 twitter.update_status(status=message)
 print("Tweeted: %s" % message)
 
